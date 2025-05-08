@@ -1,49 +1,36 @@
 import sys
 import logging
-from tkinter import getint
 from mpyc.runtime import mpc
+
+# Configure logging to display debug messages
+logging.basicConfig(level=logging.DEBUG)
+
+# Define secure integer type (32-bit default)
+secint = mpc.SecInt()
 
 async def main():
     if len(sys.argv) < 2:
-        print(f"Usage: python {sys.argv[0]} <secret_value> --hosts mpyc_hosts")
+        print(f"Usage: python {sys.argv[0]} <secret_value> [additional MPyC options like -M, -I, -P, --hosts]")
         sys.exit(1)
 
+    # Parse the secret input value
     my_input = int(sys.argv[1])
-
-    # Log the start of the MPC process
     logging.debug(f"Starting MPC runtime for input value: {my_input}")
 
-    # Start the MPC runtime with a debug log
-    try:
-        await mpc.start()
-        logging.debug("MPC runtime started successfully.")
-    except Exception as e:
-        logging.error(f"Error starting MPC runtime: {e}")
-        sys.exit(1)
+    # Start the MPyC runtime (reads MPyC CLI options automatically)
+    await mpc.start()
 
-    # Secure integer and input processing
-    secret_value = getint(my_input)
-    shared_input = await mpc.input(secret_value)  # Send securely shared input
-    
-    try:
-        # Use mpc.input to send input to other parties
-        shared_input = await mpc.input(secret_value)
-        
-        # Compute the sum by iterating through the shared input
-        total = await mpc.output(sum(shared_input))
+    # Wrap the Python int as a secure integer
+    secret_value = secint(my_input)
+    # Distribute secret shares to all parties
+    shared_inputs = mpc.input(secret_value)
 
-        logging.debug(f"[Party {mpc.pid}] Computation result: {total}")
+    # Compute the sum securely and reveal the result
+    total = await mpc.output(mpc.sum(shared_inputs))
+    logging.info(f"[Party {mpc.pid}] The sum of all inputs is: {total}")
 
-    except Exception as e:
-        logging.error(f"Error during computation: {e}")
+    # Shutdown the MPyC runtime
+    await mpc.shutdown()
 
-    # Shutdown the MPC runtime after computation
-    try:
-        await mpc.shutdown()
-        logging.debug("MPC runtime shutdown successfully.")
-    except Exception as e:
-        logging.error(f"Error shutting down MPC: {e}")
-
-# Run the main function inside MPyC runtime
 if __name__ == '__main__':
     mpc.run(main())
