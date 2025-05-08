@@ -1,3 +1,8 @@
+import sys
+import logging
+from tkinter import getint
+from mpyc.runtime import mpc
+
 async def main():
     if len(sys.argv) < 2:
         print(f"Usage: python {sys.argv[0]} <secret_value> --hosts mpyc_hosts")
@@ -17,7 +22,7 @@ async def main():
         sys.exit(1)
 
     # Secure integer and input processing
-    secret_value = secint(my_input)
+    secret_value = getint(my_input)
     
     try:
         # Use mpc.input to send input to other parties
