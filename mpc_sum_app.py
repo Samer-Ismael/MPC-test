@@ -1,12 +1,3 @@
-import sys
-import logging
-from mpyc.runtime import mpc
-
-# Set up logging to debug the connection process
-logging.basicConfig(level=logging.DEBUG)
-
-secint = mpc.SecInt()
-
 async def main():
     if len(sys.argv) < 2:
         print(f"Usage: python {sys.argv[0]} <secret_value> --hosts mpyc_hosts")
@@ -31,7 +22,8 @@ async def main():
     try:
         # Use mpc.input to send input to other parties
         shared_input = await mpc.input(secret_value)
-        # Sum the shared inputs from all parties
+        
+        # Compute the sum by iterating through the shared input
         total = await mpc.output(sum(shared_input))
 
         logging.debug(f"[Party {mpc.pid}] Computation result: {total}")
