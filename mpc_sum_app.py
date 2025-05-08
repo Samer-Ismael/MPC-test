@@ -1,5 +1,9 @@
 import sys
+import logging
 from mpyc.runtime import mpc
+
+# Set up logging to debug the connection process
+logging.basicConfig(level=logging.DEBUG)
 
 secint = mpc.SecInt()
 
@@ -10,18 +14,38 @@ async def main():
 
     my_input = int(sys.argv[1])
 
-    # Start the MPyC runtime and automatically listen on port 7070
-    await mpc.start()
+    # Log the start of the MPC process
+    logging.debug(f"Starting MPC runtime for input value: {my_input}")
+
+    # Start the MPC runtime with a debug log
+    try:
+        await mpc.start()
+        logging.debug("MPC runtime started successfully.")
+    except Exception as e:
+        logging.error(f"Error starting MPC runtime: {e}")
+        sys.exit(1)
 
     # Secure integer and input processing
     secret_value = secint(my_input)
-    shared_input = await mpc.input(secret_value)  # Use await for input as it is an async operation
-    total = await mpc.output(sum(shared_input))
+    
+    try:
+        # Use mpc.input to send input to other parties
+        shared_input = await mpc.input(secret_value)
+        # Sum the shared inputs from all parties
+        total = await mpc.output(sum(shared_input))
 
-    print(f"[Party {mpc.pid}] The sum of all inputs is: {total}")
+        logging.debug(f"[Party {mpc.pid}] Computation result: {total}")
 
-    # Shut down MPyC runtime
-    await mpc.shutdown()
+    except Exception as e:
+        logging.error(f"Error during computation: {e}")
+
+    # Shutdown the MPC runtime after computation
+    try:
+        await mpc.shutdown()
+        logging.debug("MPC runtime shutdown successfully.")
+    except Exception as e:
+        logging.error(f"Error shutting down MPC: {e}")
 
 # Run the main function inside MPyC runtime
-mpc.run(main())
+if __name__ == '__main__':
+    mpc.run(main())
