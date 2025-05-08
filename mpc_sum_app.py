@@ -10,14 +10,18 @@ async def main():
 
     my_input = int(sys.argv[1])
 
+    # Start the MPyC runtime and automatically listen on port 7070
     await mpc.start()
 
+    # Secure integer and input processing
     secret_value = secint(my_input)
-    shared_input = mpc.input(secret_value)  # NO await here
+    shared_input = await mpc.input(secret_value)  # Use await for input as it is an async operation
     total = await mpc.output(sum(shared_input))
 
     print(f"[Party {mpc.pid}] The sum of all inputs is: {total}")
 
+    # Shut down MPyC runtime
     await mpc.shutdown()
 
+# Run the main function inside MPyC runtime
 mpc.run(main())
