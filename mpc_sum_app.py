@@ -23,6 +23,7 @@ async def main():
 
     # Secure integer and input processing
     secret_value = getint(my_input)
+    shared_input = await mpc.input(secret_value)  # Send securely shared input
     
     try:
         # Use mpc.input to send input to other parties
