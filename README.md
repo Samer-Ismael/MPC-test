@@ -13,3 +13,6 @@ PC2 "192.168.0.11" : python mpc_sum_app.py 25 -P 192.168.0.11 -P 192.168.0.150 -
 Viktigaste är:
 den första IP-adressen i listan är IP:n för den dator du kör skriptet på – annars fungerar det inte.
 Servern med -I 0 måste startas först, och sedan de andra. Det här är den ända sättet jag har fått att fungera.
+
+
+![Screenshot](test.png)
